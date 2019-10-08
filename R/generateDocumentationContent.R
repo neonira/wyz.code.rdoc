@@ -7,6 +7,11 @@ generateDocumentationContent <- function(targetFolder_s_1,
                                          typeFactory_o_1 = FunctionParameterTypeFactory(),
                                          overwrite_b_1 = FALSE) {
 
+  generateStandaloneMethodSignature <- function(methodName_s_1, argumentNames_s) {
+    args <- if (length(argumentNames_s) == 0) '' else paste(argumentNames_s, collapse = ', ')
+    paste0(methodName_s_1, '(', args, ')')
+  }
+
   if (!dir.exists(targetFolder_s_1))
     abort('targetFolder_s_1 must be an existing directory.')
 
@@ -14,7 +19,24 @@ generateDocumentationContent <- function(targetFolder_s_1,
   if (!kind_s_1 %in% ak)
     abort('kind_s_1 must be chosen amongst', strBracket(paste(ak, collapse = ',')))
 
-  if (is.na(name_s_1)) {
+  no_name <- is.na(name_s_1)
+  no_obj <-  !is.object(object_o_1)
+  if (no_name && no_obj)
+    abort('provide name_s_1 or/and object_o_1 - cannot work when both are missing')
+
+  if (no_obj) {
+    FunctionWrapperEnv <- function() {
+      self <- environment()
+      class(self) <- append('FunctionWrapperEnv', class(self))
+      self
+    }
+    object_o_1 <- FunctionWrapperEnv()
+    f <- tryCatch(get(name_s_1, mode = 'function', envir = parent.frame()), error = function(e) e)
+    if (!is.function(f)) abort('unable to find function', name_s_1)
+    object_o_1[[name_s_1]] <- f
+  }
+
+  if (no_name) {
     gem <- sapply(wyz.code.offensiveProgramming::getObjectFunctionNames(object_o_1),
                   function(e) {
       generateDocumentationContent(targetFolder_s_1, 'method', e, object_o_1,
@@ -26,7 +48,8 @@ generateDocumentationContent <- function(targetFolder_s_1,
 
   cn <- setdiff(class(object_o_1), c('environment', 'R6'))[1]
   nam <- ifelse(kind_s_1 == ak[1], paste0(packageName_s_1, '-', ak[1]),
-                ifelse(kind_s_1 == ak[2], cn, paste0(name_s_1, '.', cn)))
+                ifelse(kind_s_1 == ak[2], cn,
+                       ifelse(no_obj, name_s_1, paste0(name_s_1, '.', cn))))
   fn <- file.path(targetFolder_s_1, nam)
 
   rdk <- rdocKeywords(TRUE)
@@ -144,7 +167,7 @@ generateDocumentationContent <- function(targetFolder_s_1,
   rtc <- copy(retrieveTestCaseDefinitions(object_o_1))
   function_name <- NULL # data.table NSE issue with Rcmd check
 
-  os <- getObjectSignature(object_o_1)
+  os <- if (!no_obj) getObjectSignature(object_o_1) else '()'
   pieces <- list(
     name = funs$name(nam),
     alias = funs$alias(nam),
@@ -162,7 +185,7 @@ generateDocumentationContent <- function(targetFolder_s_1,
     pieces$description <- funs$description(generateContent(packageName_s_1, 'packageDescription'))
     pieces$details <- generateContent(genpkgdetails(), 'details')
   } else {
-    pieces$title <-  funs$title(sentensize(generateLabel(name_s_1)))
+    pieces$title <-  funs$title(generateLabel(name_s_1))
     pieces$description <- funs$description(sentensize(desc))
     pieces$value <- if (is.data.table(frt)) {
       funs$value(genvalue(frt[function_name == name_s_1]$return_value))
@@ -176,11 +199,16 @@ generateDocumentationContent <- function(targetFolder_s_1,
       pd <- if (length(ofa[[name_s_1]]) != 0) {
         asparagraph(anunlist(loop(ofa[[name_s_1]], genarg)))
       } else NA
-      pieces$usage <- funs$usage(generateS3MethodSignature(name_s_1, cn, ofa[[name_s_1]]))
+      pu <- if (!no_obj) generateS3MethodSignature(name_s_1, cn, ofa[[name_s_1]]) else {
+        generateStandaloneMethodSignature(name_s_1, ofa[[name_s_1]])
+      }
+      pieces$usage <- funs$usage(pu)
       if (!is.na(pd)) pieces$arguments <- funs$arguments(pd)
       if (!is.na(testnums[1])) {
         pieces$details <- funs$details(gendetails(testnums))
-        pieces$examples <- funs$examples(genexample(testnums, os))
+        pieces$examples <- if (!no_obj) funs$examples(genexample(testnums, os)) else {
+          funs$examples('# no tests instrumentation')
+        }
       } else {
         pieces$examples <- funs$examples('# no tests instrumentation')
       }

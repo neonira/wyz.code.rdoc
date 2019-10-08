@@ -129,3 +129,23 @@ test_that("generateDocumentationContent - coverage", {
   expect_error(generateDocumentationContent(target_folder, 'package', package_name,
                                             object, package_name, exp, overwrite_b_1 = TRUE))
 })
+
+
+# commented as it fails with unknown origin - unable to find given function???
+sumValues <- function(x_i, y_i) sum(x_i, y_i, na.rm = TRUE)
+
+gmf <- generateDocumentationContent(target_folder, 'method', 'sumValues',
+                                    NULL, package_name,
+                                    extra_method, overwrite_b_1 = TRUE)
+
+test_that("generateDocumentationContent - standalone function", {
+  expect_error(generateDocumentationContent(target_folder, 'method', NA,
+                                            NULL, package_name,
+                                            extra_method, overwrite_b_1 = TRUE))
+  # unexisting function
+  expect_error(generateDocumentationContent(target_folder, 'method', 'zorg',
+                                            NULL, package_name,
+                                            extra_method, overwrite_b_1 = TRUE))
+})
+
+#
