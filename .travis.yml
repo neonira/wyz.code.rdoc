@@ -1,0 +1,15 @@
+language: r
+
+env:
+   global:
+     - R_BUILD_ARGS=" " 
+     - R_CHECK_ARGS="--as-cran"
+     - BOOTSTRAP_LATEX="1"
+     - CODECOV_TOKEN="94bbae9b-f35f-4307-bb08-d3dcce0c42f8"
+     
+r_packages:
+  - covr
+
+after_success:
+  - Rscript -e 'library(covr); codecov()'
+  
