@@ -1,0 +1,62 @@
+---
+title: "wyz.code.rdoc releases"
+author: "Fabien GELINEAU"
+date: "Last update 2020 January"
+output: 
+  rmarkdown::html_vignette:
+    number_sections: true
+    toc: true
+    css: style.css
+vignette: >
+  %\VignetteIndexEntry{wyz.code.rdoc releases}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<img src='images/rdoc-hex.png' alt='offensive programming - R documentation' style='width:30%'/>
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Release 1.1.8 - January 2020 
+
+Main improvements are 
+
+1. rebuild entirely manual page generation
+1. added a way to generate a manual page from a standard R function
+1. added manual page post processing to allow automated tuning of resulting page
+1. added manual page statistics - see **computeDocumentStatistics** function manual page
+1. enforced capitalization on new section name creation in manual page
+1. completed and cleaned up R code - 33 exported functions - 17 internals 
+1. completed manual pages - 35 manual pages 
+1. enhanced manual pages documentation: review of all contents and corrections
+1. completed vignettes - 5 vignettes
+1. added data folder to allow for data manual page production and test
+1. fixed issues on vignette 
+1. completed test panel - 45 test files - 811 tests
+1. completed business use cases - 10 BUC
+1. Worked on test coverage to reach level higher than 99%
+1. **packageFunctionsInformation** verified and upgraded
+1. Timing for tests 26s, checks 51s
+
+
+# Release 1.1.7 - October 2019
+
+Main improvements are 
+
+1. corrected many typographic errors in i/o with end-user
+2. completed unit tests
+3. enforced higher code coverage (from 75% up to 99.28%)
+4. changed many functions visibility from hidden (internal to package) to visible (end-user available).
+5. documentation completion
+6. clean up package dependencies. 
+
+
+This release replaces fully olders ones, that are now considered obsoletes. Keep the pace, and 
+upgrade your packages if you do not use this version or a higher one!
+
+

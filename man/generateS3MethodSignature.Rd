@@ -28,10 +28,14 @@ to know more about R documentation requirements.
 Maintainer: \packageMaintainer{wyz.code.rdoc}
 }
 \examples{
-print(generateReference(list(url = 'https://neonira.github.io/offensiveProgrammingBook/',
-                             label = 'Offensive Programming Book')))
+print(generateReference(
+         list(url = 'https://neonira.github.io/offensiveProgrammingBook/',
+             label = 'Offensive Programming Book')
+))
 # provides following result
 # "Refer to \\href{https://neonira.github.io/offensiveProgrammingBook/}{Offensive Programming Book}."
 }
 \keyword{ keywords }
 \keyword{ documentation }
+\encoding{UTF-8}
+

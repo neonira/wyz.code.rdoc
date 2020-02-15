@@ -1,22 +1,52 @@
 import("data.table")
 import("R6")
 import('wyz.code.offensiveProgramming')
-importFrom("methods", "getMethod", "is")
-importFrom("utils", "methods", "installed.packages")
+importFrom("methods", "getMethod", "is", "formalArgs", "selectMethod",
+           "selectSuperClasses", "slot", "slotNames")
+importFrom("utils", "methods", "installed.packages", "isS3method", 'glob2rx')
 importFrom("tidyr", "separate")
 
 export(
+  # core - markup
   rdocKeywords,
-  generateContent,
-  generateSection,
+  GenerationContext,
+  InputContext,
+  ProcessingContext,
+
+  # core - generators
+  escapeContent,
+  generateMarkup,
+  generateEnc,
+  generateEnumeration,
+  generateTable,
   generateReference,
-  generateSpecialLink,
+  generateSection,
+  generateOptionLink,
+  generateOptionSexpr,
   generateS3MethodSignature,
-  generateDocumentationContent,
-  generateDocumentationFile,
-  getObjectSignature,
+
+  # layer 3 - life simplifiers
+  beautify,
+  convertExamples,
+  generateParagraph,
+  generateParagraphCR,
+  generateParagraph2NL,
   sentensize,
-  WrapperObject,
-  generateWrapperObject,
-  retrievePackageFunctionNames
+
+  # end-user generators
+  produceDocumentationFile,
+  producePackageLink,
+  ManualPageBuilder,
+  completeManualPage,
+
+  # end-user utilities
+  computeDocumentationStatistics,
+  getStandardSectionNames,
+  identifyReplacementVariables,
+  interpretResults,
+  opRdocInformation,
+  produceManualPage,
+  produceAllManualPagesFromObject,
+  auditDocumentationFiles,
+  verifyDocumentationFile
 )

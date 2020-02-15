@@ -1,40 +1,50 @@
 \name{generateSection}
 \alias{generateSection}
-\title{
-Generate a \R documentation section
-}
-\description{
-Generate a \R documentation section
-}
+\title{Generate Section}
+\description{Generate \R documentation section}
 \usage{
 generateSection(sectionName_s_1, content_s)
 }
 \arguments{
-  \item{sectionName_s_1}{ the section name to consider. Must be known from
-  \code{\link{rdocKeywords}}. }
-  \item{content_s}{ the section textual content to consider }
-}
-\details{
-Sections inlining is automated and managed internally. Do not bother about it.
+\item{sectionName_s_1}{A single string value}
+\item{content_s}{An unconstrained vector of string values}
 }
 \value{
-A single string.
+A single string, containing the generated reference text. Can be appended several
+times to elaborate a multiple reference text.
+
+See references and examples below.
 }
 \references{
 Refer to
-\href{https://cran.r-project.org/doc/manuals/R-exts.html}{Writing R extensions}
-to know more about R documentation requirements.
+\href{https://cran.r-project.org/doc/manuals/R-exts.html}{Writing \R extensions}
+to know more about using web references in \R documentation.
+
+Refer to \href{https://developer.r-project.org/parseRd.pdf}{Parsing Rd files} by
+Duncan Murdoch.
 }
 \author{
 \packageAuthor{wyz.code.rdoc}
 
 Maintainer: \packageMaintainer{wyz.code.rdoc}
 }
-\examples{
-print(generateReference(list(url = 'https://neonira.github.io/offensiveProgrammingBook/',
-                             label = 'Offensive Programming Book')))
-# provides following result
-# "Refer to \\href{https://neonira.github.io/offensiveProgrammingBook/}{Offensive Programming Book}."
+\note{
+This function should not be used directly unless you need to write your own manual
+page generation program.
+
+To generate a manual page directly, you would better use \code{\link{produceManualPage}}.
 }
-\keyword{ keywords }
-\keyword{ documentation }
+\keyword{documentation}
+\concept{documentation generation}
+\encoding{UTF-8}
+\section{Classification}{
+STRATUM \ifelse{latex}{\out{$\longmapsto$}}{\ifelse{html}{\out{&#x25B6;}}{\\u25b6}} LAYER_1
+
+PHASING \ifelse{latex}{\out{$\longmapsto$}}{\ifelse{html}{\out{&#x25B6;}}{\\u25b6}} BUILD
+
+INTENT  \ifelse{latex}{\out{$\longmapsto$}}{\ifelse{html}{\out{&#x25B6;}}{\\u25b6}} PARTS_BUILDING
+}
+\examples{
+generateSection('concept', 'meta programming')
+# "\\\\concept{meta programming}"
+}

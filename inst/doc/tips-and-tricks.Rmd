@@ -1,0 +1,269 @@
+---
+title: "wyz.code.rdoc Tips and Tricks"
+author: "Fabien GELINEAU"
+date: "Last update 2020 January"
+output: 
+    html_document:
+        number_sections: true
+        toc: true
+        css: style.css
+vignette: >
+  %\VignetteIndexEntry{wyz.code.rdoc Tips and Tricks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<img src='images/rdoc-hex.png' alt='offensive programming - R documentation' style='width:30%'/>
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = ""
+)
+source('vignette-common.R')
+```
+
+```{r context, eval = TRUE, echo = FALSE}
+library("data.table")
+library("wyz.code.offensiveProgramming")
+library("wyz.code.rdoc", warn.conflicts = FALSE)
+```
+
+This use-case vignette is dedicated to some common manual page use case generation using package `r rdoc`.  
+
+It may make sense for newcommers to read the tutorial vignette prior to read this vignette. 
+
+# Tips and tricks about sections {.tabset .tabset-fade .tabset-pills}
+
+## add a section
+
+Some sections have to be unique `r cmt('title, description, examples, ...')` some others not `r cmt('keyword, concept, alias, ...')`. You must respect the implicit contract of the standard `r R` documentation. See [writing `r R` extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html) for more information. 
+
+To add a section, just set its content to the one you desired. Content may contain format directives or not. See below, paragraph 'about-format'.
+
+My only advice is to keep content as simple and sharp as possible. Using non ambiguous terms and clear sentences helps a lot. 
+
+For example, to add a `r citefun('details')` section and three `r citefun('concept')` sections, you could do something similar to 
+
+```{r echo=TRUE, eval=TRUE}
+pc <- ProcessingContext(
+  extraneous_l = list(
+    details = 'It is worth to know bla bla bla',
+    concept = paste0('concept-', 1:3)
+  )
+)
+```
+
+## complete a section
+
+Activate post processing for sections you want to complete. 
+For example, to complete the `r citefun('title')` section, you could do 
+
+```{r echo=TRUE, eval=TRUE}
+pc <- ProcessingContext(
+  postProcessing_l = list( 
+    title =  function(content_s) { 
+      paste(content_s, sentensize('some complimentary content'))
+    }
+  )
+)
+```
+
+## remove a section
+
+Just set its content to `r citecode('NULL')`.
+
+```{r echo=TRUE, eval=TRUE}
+pc <- ProcessingContext(
+  postProcessing_l = list(
+    details = function(content_s) NULL
+  )
+)
+```
+
+# Tips and tricks about content 
+
+## content escaping
+
+Content escaping is sometimes fully necessary, sometimes partially necessary and sometimes unneeded. 
+Quite difficult to have a systematic approach, as content varies at lot according to section intent,
+section nature `r cmt('code, text, equation, ...')` and also according to surrounding context. 
+
+To ease handling of content escape, `r rdoc` offers several functions: a high-level function `r citefun("generateMarkup")` and a low-level function `r citefun("escapeContent")`.
+
+By default content used is only partially escaped. Characters, `r citechar("'@'")` and `r citechar("'%'")` are 
+systematically escaped, but not characters `r citechar("'{'")` and `r citechar("'}'")`. To escape those last, you
+must set argument `r citearg("escapeBraces_b_1")` to `r citecode("TRUE")` 
+while using one or the other of those functions.
+
+```{r content_escape, echo=TRUE, eval=TRUE}
+content <- 'function(x) { x + 1 }'
+
+# To be use in a code section content
+generateMarkup(content)
+
+# To be used in a text section content
+paste('Some R code:', generateMarkup(content, escapeBraces_b_1 = TRUE))
+```
+
+## Content generation for `r R` documentation section {.tabset .tabset-fade .tabset-pills}
+
+As a end-user you should rely on [use cases](use-cases.html). As a programmer, you may need to create your own generation scheme to fulfil some special requirements. Following function could be useful to do so.
+
+function name | intent
+:--------------------|:---------------------------------------------------------
+`r citefun('generateSection')` | generate a `r R` documentation section 
+`r citefun('generateParagraph')`  | generate a paragraph collating all your inputs with a single new line by default. 
+`r citefun('generateParagraphCR')`  | generate a paragraph collating all your inputs with '\\cr' 
+`r citefun('generateParagraph2NL')` | generate a paragraph collating all your inputs with two new lines.
+
+
+## Content generation for `r citefun('examples')` section {.tabset .tabset-fade .tabset-pills}
+
+Examples are a really important part of the documentation. It is also a quite tricky part when handcrafting documentation. This is due an inherent complexity related to contextual processing that has to take into consideration, testing time, necessary testing resources, test execution path, and so on. 
+
+In order to increase productivity and simplify the `r citefun('examples')` section, `r rdoc` provides a dedicated function that turns pure `r R` code into content. 
+
+Here is the pattern to follow.
+
+1. create a variable that holds a list of functions taking no arguments. The body of each function must be legal `r R` code, embodying the example
+1. use function `r citefun('convertExamples')` to convert examples. You have the opportunity to pass along some keywords in order to manage test that should not be ran, should not be tested, should not be shown. You also have the opportunity to capture the example output and to introduce it automatically into the content. 
+
+Let's see a sample session to do so 
+
+### code 
+
+```{r echo=TRUE, eval=TRUE}
+# The function to test
+divide <- function(x_n, y_n) x_n / y_n
+
+# The examples to consider
+examples <- list(
+  function() { divide(1:3, 1:3 + 13L) },
+  function() { divide(0L, c(Inf, -Inf)) },
+  function() { divide(c(Inf, -Inf), 0L) },
+  function() { divide(0L, 0L) }
+)
+
+# The glue to set generation context
+ic <- InputContext(NULL, 'divide')
+pc <- ProcessingContext(
+  extraneous_l = list(
+    examples = convertExamples(examples, captureOutput_b_1n = TRUE)
+  )
+)
+td <- tempdir()
+gc <- GenerationContext(td, overwrite = TRUE)
+
+# The generation of the manual page
+rv <- produceManualPage(ic, pc, gc)
+```
+
+### content generated 
+
+```{r echo=TRUE, eval=TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated content](images/divide.png)
+
+
+# Tips and tricks about format {.tabset .tabset-fade .tabset-pills}
+
+## enumeration format 
+
+Function `r citefun('generateEnumeration')` eases enumeration management. 
+
+```{r echo=TRUE, eval=TRUE}
+generateEnumeration(paste('case', 1:4))
+```
+
+## list format
+
+Function `r citefun('generateEnumeration')` also eases item list management. 
+
+```{r echo=TRUE, eval=TRUE}
+generateEnumeration(paste('case', 1:4), TRUE)
+```
+
+## table format
+
+To format a table, use function `r citefun('generateTable')`. 
+
+```{r echo=TRUE, eval=TRUE}
+dt <- data.table::data.table(x = paste0('XY_', 1:3), y = letters[1:3])
+
+# as-is 
+generateTable(dt)
+
+# with row numbering
+generateTable(dt, numberRows_b_1 = TRUE)
+```
+
+## special formats
+
+Specification of `r R` documentation is quite complex. There are many variants possible and many ways to achieve a result. Following functions try to provide one convenient solution for some common needs.
+
+function name | intent
+:--------------------|:---------------------------------------------------------
+`r citefun('generateOptionLink')` | When you need to generate a cross package documentation link use this function. If you need an intra package documentation link use function `r citefun('beautify()$link')`. You could also use `r citefun('producePackageLink')` to generate a cross package documentation link, but you won't be able to customize the labels. 
+`r citefun('generateOptionSexpr')` | When you need to generate a `r citecode('Sexpr')`, use `r citefun('generateMarkup')` when you don't need options, otherwise use funciton `r citefun('generateOptionSexpr')`.
+`r citefun('generateEnc')` | generate a locale text encoding and ASCII equivalence. Not to be confused with `r citefun('generateEncoding')` that set encoding for the full manual page.
+`r citefun('generateReference')` | generate the text for a documentary or web reference. 
+
+Refer to dedicated manual pages for more information. 
+
+# Tips and tricks about presentation {.tabset .tabset-fade .tabset-pills}
+
+Many typographic enhancements are available. They are all grouped behind a facade
+name `r citefun('beautify')`. 
+
+```{r echo=TRUE, eval=TRUE}
+b <- beautify()
+names(b)
+```
+
+```{r echo=TRUE, eval=TRUE}
+b$bold('lorem ipsum')
+```
+
+```{r echo=TRUE, eval=TRUE}
+b$file('/tmp/result.txt')
+```
+
+```{r echo=TRUE, eval=TRUE}
+b$acronym('CRAN')
+```
+
+```{r echo=TRUE, eval=TRUE}
+co <- '{ x %% y }'
+b$code(co) # very probably wrong 
+
+e <- beautify(TRUE)
+e$code(co) # much more probably right
+```
+
+and the very convenient
+
+```{r echo=TRUE, eval=TRUE}
+# link to another package
+b$code(producePackageLink('ggplot2', 'aes_string'))
+
+# link to same package
+b$codelink('generateTable')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+

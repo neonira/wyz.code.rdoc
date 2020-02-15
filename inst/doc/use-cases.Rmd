@@ -1,0 +1,470 @@
+---
+title: "wyz.code.rdoc use cases"
+author: "Fabien GELINEAU"
+date: "Last update 2020 - Q1"
+output: 
+  rmarkdown::html_vignette:
+    number_sections: true
+    toc: true
+    css: style.css
+vignette: >
+  %\VignetteIndexEntry{wyz.code.rdoc use cases}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<link rel="stylesheet" href="style.css">
+
+<img src='images/rdoc-hex.png' alt='offensive programming - R documentation' style='width:30%'/>
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = ""
+)
+source('vignette-common.R')
+```
+
+```{r context, eval = TRUE, echo = FALSE}
+library("data.table")
+library("wyz.code.offensiveProgramming")
+library("wyz.code.rdoc", warn.conflicts = FALSE)
+```
+
+This use-case vignette is dedicated to some common manual page use case generation using package `r rdoc`.  
+
+It may make sense for newcommers to read the tutorial vignette prior to read this vignette. 
+
+# Manual page generation from a function
+
+## Standard `r R` function {.tabset .tabset-fade .tabset-pills}
+
+I will consider function `r citecode('append')` from base package as example. Any other `r R` function may work as well.  
+
+### code 
+
+```{r function_mpg, eval = TRUE, echo = TRUE}
+b <- beautify()
+examples <- list(
+  function() { append(1:5, 0:1, after = 3) }
+)
+
+ic <- InputContext(NULL, 'append')
+pc <- ProcessingContext(
+  extraneous_l = list(
+    title = 'Vector Merging',
+    description = sentensize('add elements to a vector'),
+    details = paste('If the parameter', b$code('after'), 'is higher than' , 
+                    b$code('x'), 'length,\n then insertion is done at the',
+                    'end of the data structure'),
+    references = paste('Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988)', 
+                 'The New S Language. Wadsworth & Brooks/Cole.'),
+    examples = convertExamples(examples, captureOutput_b_1n = FALSE)
+  ),
+  postProcessing_l = list(
+    arguments = function(content_s) {
+      s <- sub('XXX_001', sentensize('the vector the values are to be appended to'), 
+               content_s, fixed = TRUE)
+      s <- sub('XXX_002', sentensize('to be included in the modified vector'), s, fixed = TRUE)
+      s <- sub('XXX_003', 
+               'a subscript, after which the values are to be appended',
+               s, fixed = TRUE)
+      s
+    }
+  )
+)
+td <- tempdir()
+gc <- GenerationContext(td, overwrite = TRUE)
+rv <- produceManualPage(ic, pc, gc)
+```
+
+
+**NOTA BENE**: Embedded new line characters in previous text are present for vignette format purpose
+only here, in particular to avoid horizontal scrollbars and to ease reading.  Indeed, sometimes you will have to do so, to avoid producing too long lines in `r R` documentations files, as this will generate a warning when running `r citefun('R CMD check')`. If you plan to publish your package on `r citefun('CRAN')`, you will have to resolve such warning cases.
+
+### generated `r citecode('.Rd')` file
+
+```{r function_mpg_rv, eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/append.png)
+
+### original content
+
+![base R append documentation](images/append-orig.png)
+
+## Semantic naming function {.tabset .tabset-fade .tabset-pills}
+
+Let's consider following function, respectful of semantic naming as defined by offensive
+programming. Refer to [Offensive programming book](https://neonira.github.io/offensiveProgrammingBook/) to get introduction and advanced knowledge on offensive programming advantages, practice and ecosystem. 
+
+```{r op, eval = TRUE, echo = TRUE}
+iterateOverSet <- function(set_s, enforceUniqueness_b_1 = TRUE) {
+  NULL
+}
+```
+
+The body is set to `r citecode('NULL')` for demonstration purpose and to prove
+that it does not interfere with documentation generation. 
+
+### code 
+
+```{r op_mpg, eval = TRUE, echo = TRUE}
+examples <- list(
+  function() { iterateOverSet(sample(LETTERS, 35, TRUE), FALSE) },
+  function() { iterateOverSet(as.character(1:9)) }
+)
+ic <- InputContext(NULL, 'iterateOverSet')
+pc <- ProcessingContext(
+  extraneous_l = list(
+    examples = convertExamples(examples, captureOutput_b_1n = FALSE)
+  )
+)
+rv_op <- produceManualPage(ic, pc, gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r op_mpg_rv, eval = TRUE, echo = TRUE}
+readLines(rv_op$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/iterateOverSet.png)
+
+### Main differences 
+
+Main differences with standard `r R` function generation are, using semantic naming scheme, you do not have to 
+
+1. provide content for arguments. It is automatically deduced from the semantic name you use
+1. provide a title. It is deduced from the function name. 
+1. provide a description. It is also deduced from the function name. 
+
+You can still change or adapt provided content by a post processing whenever and wherever needed to meet sharper documentation level. 
+
+
+# Manual page generation from an environment object
+
+## Standard `r R` object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('MeltingPot_Env')` to produce an object based on an environment containing several functions. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+source(findFilesInPackage('classes', 'wyz.code.offensiveProgramming')[1])
+ic <- InputContext(MeltingPot_Env())
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+**NOTA BENE**: I use default processing context here. This means, only defaultly valuable documentation sections will be filled-in.
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/r-env.png)
+
+
+
+## Offensive programming object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Zorg')` to produce an object based on an environment containing several functions. This class is partially offensive programming instrumented. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+ic <- InputContext(Zorg())
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/op-env.png)
+
+### Main differences 
+
+There exists only very few differences between standard `r R` and `r citefun('offensive programming')` class documentation generation. Using the later allows to benefit from instrumentation and allows to run dynamic checks instead of static checks. 
+
+
+# Manual page generation from an S3 object
+
+## Standard `r R` object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Bu_S3')` to produce an object based on S3 class scheme containing several functions. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+ic <- InputContext(Bu_S3())
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/r-s3.png)
+
+
+## Offensive programming object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Addition_TCFI_Partial_S3')` to produce an object based on a S3 class containing several functions. This class is partially offensive programming instrumented. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+source(findFilesInPackage('Addition_TCFI_Partial_S3.R', 'wyz.code.offensiveProgramming')[1])
+ic <- InputContext(Addition_TCFI_Partial_S3())
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/op-s3.png)
+
+### Main differences 
+
+There exists only very few differences between standard `r R` and `r citefun('offensive programming')` class documentation generation. Using the later allows to benefit from instrumentation and allows to run dynamic checks instead of static checks. 
+
+
+
+
+
+# Manual page generation from an S4 object
+
+## Standard `r R` object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Person_S4')` to produce an object based on S4 class scheme containing several functions. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+ic <- InputContext(new('Person_S4', name = 'neonira'))
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/r-s4.png)
+
+
+## Offensive programming object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Addition_TCFI_Partial_S4')` to produce an object based on a S4 class containing several functions. This class is partially offensive programming instrumented. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+source(findFilesInPackage('Addition_TCFI_Partial_S4.R', 'wyz.code.offensiveProgramming')[1])
+ic <- InputContext(new('Addition_TCFI_Partial_S4'))
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/op-s4.png)
+
+### Main differences 
+
+There exists only very few differences between standard `r R` and `r citefun('offensive programming')` class documentation generation. Using the later allows to benefit from instrumentation and allows to run dynamic checks instead of static checks. 
+
+
+
+# Manual page generation from an RC object
+
+## Standard `r R` object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Person_RC')` to produce an object based on RC class scheme containing several functions. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+ic <- InputContext(new('Person_RC', name = 'neonira'))
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/r-rc.png)
+
+
+## Offensive programming object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Addition_TCFI_Partial_RC')` to produce an object based on an RC class containing several functions. This class is partially offensive programming instrumented. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+source(findFilesInPackage('Addition_TCFI_Partial_RC.R', 'wyz.code.offensiveProgramming')[1])
+ic <- InputContext(new('Addition_TCFI_Partial_RC'))
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/op-rc.png)
+
+### Main differences 
+
+There exists only very few differences between standard `r R` and `r citefun('offensive programming')` class documentation generation. Using the later allows to benefit from instrumentation and allows to run dynamic checks instead of static checks. 
+
+
+
+# Manual page generation from an R6 object
+
+## Standard `r R` object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Accumulator_R6')` to produce an object based on R6 class scheme containing several functions. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+ic <- InputContext(Accumulator_R6$new())
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/r-r6.png)
+
+
+## Offensive programming object {.tabset .tabset-fade .tabset-pills}
+
+I will consider class named `r citecode('Addition_TCFI_Partial_R6')` to produce an object based on an R6 class containing several functions. This class is partially offensive programming instrumented. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+source(findFilesInPackage('Addition_TCFI_Partial_R6.R', 'wyz.code.offensiveProgramming')[1])
+ic <- InputContext(Addition_TCFI_Partial_R6$new())
+rv <- produceManualPage(ic, generationContext = gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/op-r6.png)
+
+# Manual page generation for a package 
+
+## Standard `r R` object {.tabset .tabset-fade .tabset-pills}
+
+I will consider package named `r citecode('wyz.code.rdoc')` as example to generate a package manual page. 
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+ic <- InputContext(NULL, package = 'wyz.code.rdoc') # using an 
+pc <- ProcessingContext(
+  postProcessing_l = list(
+    details = function(content_s) NULL
+  )
+)
+rv <- produceManualPage(ic, pc, gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/pkg.png)
+
+# Manual page generation for data 
+
+## Standard `r R` object {.tabset .tabset-fade .tabset-pills}
+
+I will consider data named `r citecode('dummy')` to generate documentation from.
+
+### code 
+
+```{r eval = TRUE, echo = TRUE}
+ic <- InputContext(dummy, dataFilename = 'dummy.csv')
+pc <- ProcessingContext(
+  extraneous_l = list(
+    description = 'a dummy datafile for demonstration purpose',
+    format = 'a data.frame 9x2',
+    source = 'fake data - used only for demo'
+  ),
+  postProcessing_l = list(
+    classification = function(content_s) NULL
+  )
+)
+rv <- produceManualPage(ic, pc, gc)
+```
+
+### generated `r citecode('.Rd')` file
+
+```{r eval = TRUE, echo = TRUE}
+readLines(rv$context$filename)
+```
+
+### generated content as picture
+
+![generated append documentation](images/data.png)
+
+
+

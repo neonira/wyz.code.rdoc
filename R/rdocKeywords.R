@@ -1,30 +1,33 @@
 rdocKeywords <- function(asList_b_1 = FALSE) {
-  # Taken from "Writing R Extensions book"
+  # Taken from "Writing R Extensions book" and "Parsing_Rd_files"
   kw <- list(
     # apparently a mix of what (object kind) and how (presentation format)
     markingTest = c('acronym', 'bold', 'cite', 'code', 'command', 'dfn', 'dQuote',
                     'email', 'emph', 'env', 'file', 'href', 'kbd', 'option', 'pkg',
-                    'preformatted', 'samp', 'sQuote', 'strong', 'url', 'var',
-                    'verb'),
+                    'preformatted', 'samp', 'sQuote', 'special', 'strong',
+                    'url', 'var', 'verb'),
     math = c('deqn', 'eqn'),
     insertions = c('dots', 'enc', 'ldots', 'R'),
     indices = c('concept', 'keyword'),
-    sectionning = c('cr', 'section'),
+    sectionning = c('cr', 'section', 'tab', 'subsection'),
     listAndTables = c('describe', 'enumerate', 'item', 'itemize', 'tabular'),
     figures = c('figures'),
-    crossReferences = c('link'),
-    documentingFunctions = c('alias', 'arguments', 'author', 'description', 'details',
-                             'dontrun', 'dontshow', 'examples', 'method', 'name',
-                             'note', 'references', 'seealso', 'S3method', 'title', 'usage',
+    crossReferences = c('link', 'linkS4class'),
+    documentingFunctions = c('alias', 'docType', 'arguments', 'author',
+                             'description', 'details',
+                             'dontrun', 'dontshow', 'donttest', 'testonly',
+                             'examples', 'method', 'name',
+                             'note', 'references', 'seealso', 'S3method',
+                             'S4method', 'title', 'usage',
+                             'Rdversion', 'synopsis', 'encoding',
                              'value'),
     conditionalText = c('if', 'ifelse', 'out'),
     dynamiquePages = c('RdOpts', 'Sexpr'),
-    userDefinedMacros = c('CRANpkg', 'doi', 'newcommand', 'packageAuthor',
-                          'packageDescription', 'packageDESCRIPTION', 'packageIndices',
-                          'packageMaintainer', 'packageTitle', 'renewcommand',
-                          'sspace'),
-    documentingDataSets = c('format', 'source'),
-    others = c('docType') # not expressed in Writing R Extension book but needed
+    userDefinedMacros = c('CRANpkg', 'doi', 'packageAuthor',
+                          'packageDescription', 'packageDESCRIPTION',
+                          'packageIndices', 'packageMaintainer', 'packageTitle',
+                          'newcommand', 'renewcommand', 'sspace'),
+    documentingDataSets = c('format', 'source')
   )
 
   # some usage knowledge

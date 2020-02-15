@@ -1,43 +1,41 @@
 \name{sentensize}
 \alias{sentensize}
-\title{
-Sentensize a string
-}
-\description{
-Transforms a string into sentence, enforcing upper case on first letter,
-normalizing spaces, and ensuring a final point is present in the sentence.v
-All spaces characters are turned to single space.
-}
+\title{Create sentence}
+\description{Create a sentence from given content}
 \usage{
-sentensize(x_s_1, ...)
+sentensize(x_s, ...)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x_s_1}{ the string to sentensize. }
-  \item{\dots}{ any complimentary string. Will be appended to x_s_1 prior processing }
+\item{x_s}{An unconstrained vector of string values}
+\item{...}{additional arguments (should be convertible to \code{character} type).}
 }
 \details{
-Intented to produce well-formed sentences, human readable (from a format point of
-view).
+Collate all arguments, then normalize spaces.
+
+Finally, ensure capitalization of first letter and final colon.
 }
-\value{
-A single string.
-}
-\references{
-Refer to
-\href{https://cran.r-project.org/doc/manuals/R-exts.html}{Writing R extensions}
-to know more about R documentation requirements.
-}
+\value{A single string.}
 \author{
 \packageAuthor{wyz.code.rdoc}
 
 Maintainer: \packageMaintainer{wyz.code.rdoc}
 }
-\examples{
-print(sentensize('some bla', 'bli   blo \t\n\bblu'))
-
-# provides following result
-# "Some bla bli blo blu."
+\note{
+There is no way to ask for a different final punctuation mark. If you need to
+do so, either create your own helper function or simply \code{\link{sub}}
+provided result.
 }
-\keyword{ keywords }
-\keyword{ documentation }
+\keyword{documentation}
+\concept{documentation generation}
+\encoding{UTF-8}
+\section{Classification}{
+STRATUM \ifelse{latex}{\out{$\longmapsto$}}{\ifelse{html}{\out{&#x25B6;}}{\\u25b6}} LAYER_1
+
+PHASING \ifelse{latex}{\out{$\longmapsto$}}{\ifelse{html}{\out{&#x25B6;}}{\\u25b6}} BUILD
+
+INTENT  \ifelse{latex}{\out{$\longmapsto$}}{\ifelse{html}{\out{&#x25B6;}}{\\u25b6}} PARTS_BUILDING
+}
+\examples{
+sentensize('a quick brown FOX jumps\\tover', 'the     lazy      dog')
+#  "A quick brown FOX jumps over the lazy dog."
+}

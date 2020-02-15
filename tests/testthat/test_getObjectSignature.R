@@ -13,7 +13,8 @@ obj <- list( MyEnv(),
              Zarg(),
              Zirg(),
              Zorg(),
-             Zurg()
+             Zurg(),
+             PureR()
 )
 
 #print(obj)
